@@ -7,17 +7,23 @@
         <span id="c" contenteditable="true" oninput="onInputChanged(this.textContent);">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
     </p>
     <hr/>
-    <p id="output">None.</p>
+    <p id="output1">None.</p>
+    <p id="output2"></p>
 <script>
-    var output = document.getElementById("output");
+    var output1 = document.getElementById("output1");
+    var output2 = document.getElementById("output2");
 
     function onInputChanged(value) {
-        output.textContent = "Input Changed." + value;
+        output1.textContent = "Input Changed. Value = " + value;
     }
     
     function onTextareaChanged(value) {
-        output.textContent = "Textarea Changed." + value;
+        output1.textContent = "Textarea Changed. Value = " + value;
     }
+    
+    addEventListener("input", function(event) {
+        output2.textContent = "input event fired! Target value = " + (event.target.value || event.target.textContent);
+    }, true);
 </script>
 </body>
 </htm>

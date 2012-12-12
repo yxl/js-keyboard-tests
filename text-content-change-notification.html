@@ -1,0 +1,23 @@
+<!-- The original code is from http://stackoverflow.com/questions/4767848/get-caret-cursor-position-in-contenteditable-area-containing-html-content, and was created by Tim Down -->
+<html>
+<body>
+    <p>Input:<input id="i" type="text" value="Hello" oninput="onInputChanged(this.value);"/></p>
+    <p>Textarea:<textarea id="t" oninput="onTextareaChanged(this.value);">Boy</textarea></p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true" oninput="onInputChanged(this.textContent);">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+    </p>
+    <hr/>
+    <p id="output">None.</p>
+<script>
+    var output = document.getElementById("output");
+
+    function onInputChanged(value) {
+        output.textContent = "Input Changed." + value;
+    }
+    
+    function onTextareaChanged(value) {
+        output.textContent = "Textarea Changed." + value;
+    }
+</script>
+</body>
+</htm>

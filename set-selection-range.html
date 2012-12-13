@@ -27,16 +27,14 @@
         var range = getSelectionRange();
         var elem = document.getElementById("i");
         elem.focus();
-        elem.selectionStart = range[0];
-        elem.selectionEnd = range[1];
+	elem.setSelectionRange(range[0], range[1], "forward");
     }
 
     function setTextAreaSelection() {
         var range = getSelectionRange();
         var elem = document.getElementById("t");
         elem.focus();
-        elem.selectionStart = range[0];
-        elem.selectionEnd = range[1];
+	elem.setSelectionRange(range[0], range[1], "forward");
     }
 
     function setContentEditableSelection() {

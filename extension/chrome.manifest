@@ -1,0 +1,4 @@
+content   keyboard_test                 chrome/content/
+skin      keyboard_test   classic/1.0   chrome/skin/
+locale    keyboard_test   en-US         chrome/locale/en-US/
+overlay	chrome://browser/content/browser.xul	chrome://keyboard_test/content/ff-overlay.xul

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://keyboard_test/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://keyboard_test/locale/overlay.dtd">
+<overlay id="keyboard_test-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="ff-overlay.js" type="application/x-javascript" />
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="keyboard_test-strings" src="chrome://keyboard_test/locale/overlay.properties"/>
+  </stringbundleset>
+  <popup id="contentAreaContextMenu">
+    <menuitem id="context-keyboard_test" label="&keyboard_testContext.label;"
+              accesskey="&keyboard_testContext.accesskey;"
+              insertafter="context-stop"
+              oncommand="keyboard_test.onMenuItemCommand(event)"/>
+  </popup>
+  <menupopup id="menu_ToolsPopup">
+    <menuitem id="keyboard_test-hello" label="&keyboard_test.label;"
+              oncommand="keyboard_test.onMenuItemCommand(event);"/>
+  </menupopup>
+</overlay>

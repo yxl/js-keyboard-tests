@@ -1,0 +1,100 @@
+<html>
+<body>
+    <p>Start:<input type="number" id="start" value="0" />End:<input type="number" id="end" value="2" /></p>
+    <p>Input:
+        <input id="i" type="text" value="Hello"/>
+        <button type="button" onclick="setInputSelection();">Click me</button>
+    </p>
+    <p>Textarea:
+        <textarea id="t">Boy</textarea>
+        <button type="button" onclick="setTextAreaSelection();">Click me</button>
+    </p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <button type="button" onclick="setContentEditableSelection();">Click me</button>
+    </p>
+<script>
+    var startInput = document.getElementById("start");
+    var endInput = document.getElementById("end");
+
+    function getSelectionRange() {
+        var start = parseInt(startInput.value || "0");
+        var end = parseInt(endInput.value || "2");
+        return [start, end];
+    }
+
+    function setInputSelection() {
+        var range = getSelectionRange();
+        var elem = document.getElementById("i");
+        elem.focus();
+        elem.selectionStart = range[0];
+        elem.selectionEnd = range[1];
+    }
+
+    function setTextAreaSelection() {
+        var range = getSelectionRange();
+        var elem = document.getElementById("t");
+        elem.focus();
+        elem.selectionStart = range[0];
+        elem.selectionEnd = range[1];
+    }
+
+    function setContentEditableSelection() {
+        var [startPos, endPos] = getSelectionRange();
+        var elem = document.getElementById("c");
+        var length = elem.textContent.length;
+        if (startPos < 0) {
+            startPos = 0;
+        }
+        if (endPos > length) {
+            endPos = length;
+        }
+        if (startPos > endPos) {
+            startPos  = endPos;
+        }
+        setSelectionRange(elem, startPos, endPos);
+    }
+    
+    function setSelectionRange(node, start, end) {
+        var treeWalker = document.createTreeWalker(
+            node,
+            NodeFilter.SHOW_TEXT,
+            function(node) {
+                return NodeFilter.FILTER_ACCEPT;
+            },
+            false
+        );
+
+        var range = document.createRange();
+
+        var charCount = 0;
+
+        // Find the start node and set the start position
+        while (treeWalker.nextNode()) {
+            var currentLength = treeWalker.currentNode.length;
+            if (start >= charCount + currentLength) {
+                charCount += currentLength;
+            } else {
+                range.setStart(treeWalker.currentNode, start - charCount);
+                break;
+            }
+        }
+
+        // Find the end node and set the end position
+        do {
+            var currentLength = treeWalker.currentNode.length;
+            if (end > charCount + currentLength) {
+                charCount += currentLength;
+            } else {
+                range.setEnd(treeWalker.currentNode, end - charCount);
+                break;
+            }
+        } while (treeWalker.nextNode());
+
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+</script>
+</body>
+</htm>

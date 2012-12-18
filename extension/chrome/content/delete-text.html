@@ -41,7 +41,7 @@
 
     function deleteSelection(node) {
         var nsIEditor = Components.interfaces.nsIEditor;
-	node.QueryInterface(Components.interfaces.nsIDOMNSEditableElement)
+	node.QueryInterface(Components.interfaces.nsIDOMNSEditableElement);
 	node.editor.deleteSelection(nsIEditor.ePrevious, nsIEditor.eStrip);
     }
 

@@ -1,0 +1,41 @@
+<!-- The original code is from http://stackoverflow.com/questions/4767848/get-caret-cursor-position-in-contenteditable-area-containing-html-content, and was created by Tim Down -->
+<html>
+<body>
+    <p>Input:<input id="i" type="text" value="Hello" /></p>
+    <p>Textarea:<textarea id="t">Boy</textarea></p>
+    <p>Content Editable:<span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span></p>
+    <p>Selection Range: <span id="position"></span></p>
+<script type="application/x-javascript;version=1.7">
+function getSelectionRange(element) {
+  let start = 0;
+  let end = 0;
+  if (element instanceof HTMLInputElement ||
+      element instanceof HTMLTextAreaElement) {
+    // Get the selection range of <input> and <textarea> elements
+    start = element.selectionStart;
+    end = element.selectionEnd;
+  } else {
+    // Get the selection range of contenteditable elements
+    let win = element.ownerDocument.defaultView;
+    let sel = win.getSelection();
+
+    let range = win.document.createRange();
+    range.setStart(element, 0);
+    range.setEnd(sel.anchorNode, sel.anchorOffset);
+    start = range.toString().length;
+
+    end = start + sel.toString().length;
+  }
+  return [start, end];
+}
+
+setInterval(function() {
+    let elem = document.activeElement;
+    if (elem.contentEditable === "true" || elem instanceof HTMLInputElement ||
+        elem instanceof HTMLTextAreaElement) {
+        document.getElementById("position").innerHTML = getSelectionRange(document.activeElement);
+    }
+}, 100);
+</script>
+</body>
+</htm>

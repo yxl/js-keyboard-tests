@@ -1,0 +1,111 @@
+<html>
+  <body>
+    <p>Start:<input type="number" id="start" value="0" />End:<input type="number" id="end" value="2" /></p>
+    <p>Input:
+        <input id="i" type="text" value="Hello"/>
+        <button type="button" onclick="setNodeSelectionRange('i');">Click me</button>
+    </p>
+    <p>Textarea:
+        <textarea id="t">Boy</textarea>
+        <button type="button" onclick="setNodeSelectionRange('t');">Click me</button>
+    </p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <button type="button" onclick="setNodeSelectionRange('c');">Click me</button>
+    </p>
+    <script type="application/x-javascript;version=1.7">
+
+    let Ci = Components.interfaces;
+    let Cc = Components.classes;
+    let Cu = Components.utils;
+    Cu.import('resource://gre/modules/XPCOMUtils.jsm');
+
+    XPCOMUtils.defineLazyGetter(this, "documentEncoder", function() {
+      return Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"].getService(Ci.nsIDocumentEncoder);
+    });
+
+    var startInput = document.getElementById("start");
+    var endInput = document.getElementById("end");
+
+    function getSelectionRange() {
+      var start = parseInt(startInput.value || "0");
+      var end = parseInt(endInput.value || "2");
+      return [start, end];
+    }
+
+    function setNodeSelectionRange(id) {
+      let node = document.getElementById(id);
+      var range = getSelectionRange();
+      node.focus();
+      setSelectionRange(node, range[0], range[1]);
+    }
+
+    function getContentEditableText(element) {
+      let doc = element.ownerDocument;
+      documentEncoder.init(doc, "text/plain",
+                           Ci.nsIDocumentEncoder.SkipInvisibleContent);
+      let range = doc.createRange();
+      range.selectNodeContents(element);
+      documentEncoder.setRange(range);
+      return documentEncoder.encodeToString();
+    }
+
+    function getContentEditableSelectionStart(element, selection) {
+      let doc = element.ownerDocument;
+      let range = doc.createRange();
+      range.setStart(element, 0);
+      range.setEnd(selection.anchorNode, selection.anchorOffset);
+      documentEncoder.init(doc, "text/plain", Ci.nsIDocumentEncoder.SkipInvisibleContent);
+      documentEncoder.setRange(range);
+      return documentEncoder.encodeToString().length;
+    }
+
+    function setSelectionRange(element, start, end) {
+      let isContentEditable = element.contentEditable === "true";
+
+      // Check the parameters
+      var text = isContentEditable ? getContentEditableText(element) : element.value;
+      var length = text.length;
+      if (start < 0) {
+        start = 0;
+      }
+      if (end > length) {
+        end = length;
+      }
+      if (start > end) {
+        start = end;
+      }
+
+      if (!isContentEditable) {
+        // Set the selection range of <input> and <textarea> elements
+        element.setSelectionRange(start, end, "forward");
+      } else {
+        // set the selection range of contenteditable elements
+        let win = element.ownerDocument.defaultView;
+        let sel = win.getSelection();
+
+        // Move the caret to the start position
+        sel.collapse(element, 0);
+        for (let i = 0; i < start; i++) {
+          sel.modify("move", "forward", "character");
+        }
+
+        while(getContentEditableSelectionStart(element, sel) < start) {
+          sel.modify("move", "forward", "character");
+        }
+
+        // Extend the selection to the end position
+        for (let i = start; i < end; i++) {
+          sel.modify("extend", "forward", "character");
+        }
+
+        let selectionLength = end - start;
+        while(sel.toString() < selectionLength) {
+          sel.modify("extend", "forward", "character");
+        }
+      }
+    }
+
+    </script>
+  </body>
+</htm>

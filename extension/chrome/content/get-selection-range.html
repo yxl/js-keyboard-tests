@@ -30,7 +30,7 @@ function getSelectionRange(element) {
         let range = win.document.createRange();
         range.setStart(element, 0);
         range.setEnd(sel.anchorNode, sel.anchorOffset);
-        documentEncoder.init(element.ownerDocument, "text/plain",
+        documentEncoder.init(win.document, "text/plain",
                      Ci.nsIDocumentEncoder.SkipInvisibleContent);
         documentEncoder.setRange(range);
         start = documentEncoder.encodeToString().length;

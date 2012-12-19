@@ -3,37 +3,47 @@
 <body>
     <p>Input:<input id="i" type="text" value="Hello" /></p>
     <p>Textarea:<textarea id="t">Boy</textarea></p>
-    <p>Content Editable:<span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span></p>
+    <p>Content Editable:<span id="c" contenteditable="true">Hello, some <b style="display: none">bold</b> and <i>italic and <b>bold</b></i> text</span></p>
     <p>Selection Range: <span id="position"></span></p>
 <script type="application/x-javascript;version=1.7">
+let Ci = Components.interfaces;
+let Cc = Components.classes;
+let Cu = Components.utils;
+Cu.import('resource://gre/modules/XPCOMUtils.jsm');
+
+XPCOMUtils.defineLazyGetter(this, "documentEncoder", function() {
+    return Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"].getService(Ci.nsIDocumentEncoder);
+});
+
 function getSelectionRange(element) {
-  let start = 0;
-  let end = 0;
-  if (element instanceof HTMLInputElement ||
-      element instanceof HTMLTextAreaElement) {
-    // Get the selection range of <input> and <textarea> elements
-    start = element.selectionStart;
-    end = element.selectionEnd;
-  } else {
-    // Get the selection range of contenteditable elements
-    let win = element.ownerDocument.defaultView;
-    let sel = win.getSelection();
+    let start = 0;
+    let end = 0;
+    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        // Get the selection range of <input> and <textarea> elements
+        start = element.selectionStart;
+        end = element.selectionEnd;
+    } else {
+        // Get the selection range of contenteditable elements
+        let win = element.ownerDocument.defaultView;
+        let sel = win.getSelection();
 
-    let range = win.document.createRange();
-    range.setStart(element, 0);
-    range.setEnd(sel.anchorNode, sel.anchorOffset);
-    start = range.toString().length;
+        let range = win.document.createRange();
+        range.setStart(element, 0);
+        range.setEnd(sel.anchorNode, sel.anchorOffset);
+        documentEncoder.init(element.ownerDocument, "text/plain",
+                     Ci.nsIDocumentEncoder.SkipInvisibleContent);
+        documentEncoder.setRange(range);
+        start = documentEncoder.encodeToString().length;
 
-    end = start + sel.toString().length;
-  }
-  return [start, end];
+        end = start + sel.toString().length;
+    }
+    return [start, end];
 }
 
 setInterval(function() {
     let elem = document.activeElement;
-    if (elem.contentEditable === "true" || elem instanceof HTMLInputElement ||
-        elem instanceof HTMLTextAreaElement) {
-        document.getElementById("position").innerHTML = getSelectionRange(document.activeElement);
+    if (elem.contentEditable === "true" || elem instanceof HTMLInputElement || elem instanceof HTMLTextAreaElement) {
+        document.getElementById("position").innerHTML = getSelectionRange(elem);
     }
 }, 100);
 </script>

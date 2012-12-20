@@ -1,0 +1,46 @@
+<html>
+  <body>
+    <p>Text to commit: 
+    <input type="text" id="text" value="^_^" /></p>
+    <p>Input:
+        <input id="i" type="text" value="Hello"/>
+        <button type="button" onclick="commitNodeText('i');">Insert</button>
+    </p>
+    <p>Textarea:
+        <textarea id="t">Boy</textarea>
+        <button type="button" onclick="commitNodeText('t');">Insert</button>
+    </p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <button type="button" onclick="commitNodeText('c');">Insert</button>
+    </p>
+    <script type="application/x-javascript;version=1.7">
+
+    let Ci = Components.interfaces;
+    let Cc = Components.classes;
+    let Cu = Components.utils;
+
+    let commitTextInput = document.getElementById("text");
+
+    function commitNodeText(nodeId) {
+      let element = document.getElementById(nodeId);
+      let text = commitTextInput.value;
+      commitText(element, text);
+    }
+
+    function commitText(element, text) {
+      let isContentEditable = element.contentEditable === "true";
+      if (isContentEditable) {
+        // Insert text to the content editable element
+        element.ownerDocument.execCommand("inserttext", false, text);
+      } else {
+        // Insert text to the <input> and <textarea> elements
+        element.QueryInterface(Ci.nsIDOMNSEditableElement);
+        let editor = element.editor.QueryInterface(Ci.nsIPlaintextEditor);
+        editor.insertText(text);
+      }
+    }
+
+    </script>
+  </body>
+</html>

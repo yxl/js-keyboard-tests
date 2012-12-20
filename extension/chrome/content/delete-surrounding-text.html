@@ -139,9 +139,11 @@
       let isContentEditable = element.contentEditable === "true";
       let editor = null;
       if (!isContentEditable) {
+        // Get the nsIEditor of the <input> and <textarea> elements
         element.QueryInterface(Ci.nsIDOMNSEditableElement);
         editor = element.editor;
       } else {
+        // Get the nsIEditor of the content editable element
         let session = Cc["@mozilla.org/editor/editingsession;1"].createInstance(Ci.nsIEditingSession);
         editor = session.getEditorForWindow(element.ownerDocument.defaultView);
       }

@@ -1,0 +1,153 @@
+<html>
+  <body>
+    <p>Cursor:<input type="number" id="cursor" value="1" /></p>
+    <p>Before:<input type="number" id="before" value="0" />After:<input type="number" id="after" value="2" /></p>
+    <p>Input:
+        <input id="i" type="text" value="Hello"/>
+        <button type="button" onclick="deleteNodeSurroundingText('i');">Delete</button>
+    </p>
+    <p>Textarea:
+        <textarea id="t">Boy</textarea>
+        <button type="button" onclick="deleteNodeSurroundingText('t');">Delete</button>
+    </p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <button type="button" onclick="deleteNodeSurroundingText('c');">Delete</button>
+    </p>
+    <script type="application/x-javascript;version=1.7">
+    // ================== Begin setSelectionRange ============================
+    let Ci = Components.interfaces;
+    let Cc = Components.classes;
+    let Cu = Components.utils;
+    Cu.import('resource://gre/modules/XPCOMUtils.jsm');
+
+    XPCOMUtils.defineLazyGetter(this, "documentEncoder", function() {
+      return Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"].getService(Ci.nsIDocumentEncoder);
+    });
+
+    function getContentEditableText(element) {
+      let doc = element.ownerDocument;
+      documentEncoder.init(doc, "text/plain", Ci.nsIDocumentEncoder.SkipInvisibleContent);
+      let range = doc.createRange();
+      range.selectNodeContents(element);
+      documentEncoder.setRange(range);
+      return documentEncoder.encodeToString();
+    }
+
+    function getContentEditableSelectionStart(element, selection) {
+      let doc = element.ownerDocument;
+      let range = doc.createRange();
+      range.setStart(element, 0);
+      range.setEnd(selection.anchorNode, selection.anchorOffset);
+      documentEncoder.init(doc, "text/plain", Ci.nsIDocumentEncoder.SkipInvisibleContent);
+      documentEncoder.setRange(range);
+      return documentEncoder.encodeToString().length;
+    }
+
+    function setSelectionRange(element, start, end) {
+      let isContentEditable = element.contentEditable === "true";
+
+      // Check the parameters
+      let text = isContentEditable ? getContentEditableText(element) : element.value;
+      let length = text.length;
+      if (start < 0) {
+        start = 0;
+      }
+      if (end > length) {
+        end = length;
+      }
+      if (start > end) {
+        start = end;
+      }
+
+      if (!isContentEditable) {
+        // Set the selection range of <input> and <textarea> elements
+        element.setSelectionRange(start, end, "forward");
+      } else {
+        // set the selection range of contenteditable elements
+        let win = element.ownerDocument.defaultView;
+        let sel = win.getSelection();
+
+        // Move the caret to the start position
+        sel.collapse(element, 0);
+        for (let i = 0; i < start; i++) {
+          sel.modify("move", "forward", "character");
+        }
+
+        while (getContentEditableSelectionStart(element, sel) < start) {
+          sel.modify("move", "forward", "character");
+        }
+
+        // Extend the selection to the end position
+        for (let i = start; i < end; i++) {
+          sel.modify("extend", "forward", "character");
+        }
+
+        let selectionLength = end - start;
+        while (sel.toString() < selectionLength) {
+          sel.modify("extend", "forward", "character");
+        }
+      }
+    }
+
+    // ================== Begin getSelectionRange ============================
+
+    function getSelectionRange(element) {
+      let start = 0;
+      let end = 0;
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        // Get the selection range of <input> and <textarea> elements
+        start = element.selectionStart;
+        end = element.selectionEnd;
+      } else {
+        // Get the selection range of contenteditable elements
+        let win = element.ownerDocument.defaultView;
+        let sel = win.getSelection();
+
+        let range = win.document.createRange();
+        range.setStart(element, 0);
+        range.setEnd(sel.anchorNode, sel.anchorOffset);
+        documentEncoder.init(win.document, "text/plain", Ci.nsIDocumentEncoder.SkipInvisibleContent);
+        documentEncoder.setRange(range);
+        start = documentEncoder.encodeToString().length;
+
+        end = start + sel.toString().length;
+      }
+      return [start, end];
+    }
+
+    // ================== Begin deleteSurroundingText  ==================
+    let beforeInput = document.getElementById("before");
+    let afterInput = document.getElementById("after");
+    let cursorInput = document.getElementById("cursor");
+
+    function deleteNodeSurroundingText(id) {
+      let before = parseInt(beforeInput.value || "0");
+      let after = parseInt(afterInput.value || "2");
+      let cursor = parseInt(cursorInput.value || "1");
+      let element = document.getElementById(id);
+      deleteSurroundingText(element, cursor, before, after);
+    }
+
+    function deleteSurroundingText(element, selectionStart, beforeLength, afterLength) {
+      // Selet the text to be deleted
+      let start = selectionStart - beforeLength;
+      let end = selectionStart + afterLength;
+      setSelectionRange(element, start, end);
+
+      // Delete the selected text
+      let isContentEditable = element.contentEditable === "true";
+      let editor = null;
+      if (!isContentEditable) {
+        element.QueryInterface(Ci.nsIDOMNSEditableElement);
+        editor = element.editor;
+      } else {
+        let session = Cc["@mozilla.org/editor/editingsession;1"].createInstance(Ci.nsIEditingSession);
+        editor = session.getEditorForWindow(element.ownerDocument.defaultView);
+      }
+      editor.deleteSelection(Ci.nsIEditor.ePrevious, Ci.nsIEditor.eStrip)
+    }
+
+    </script>
+  </body>
+</htm>

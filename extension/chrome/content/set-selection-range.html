@@ -24,18 +24,18 @@
       return Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"].getService(Ci.nsIDocumentEncoder);
     });
 
-    var startInput = document.getElementById("start");
-    var endInput = document.getElementById("end");
+    let startInput = document.getElementById("start");
+    let endInput = document.getElementById("end");
 
     function getSelectionRange() {
-      var start = parseInt(startInput.value || "0");
-      var end = parseInt(endInput.value || "2");
+      let start = parseInt(startInput.value || "0");
+      let end = parseInt(endInput.value || "2");
       return [start, end];
     }
 
     function setNodeSelectionRange(id) {
       let node = document.getElementById(id);
-      var range = getSelectionRange();
+      let range = getSelectionRange();
       node.focus();
       setSelectionRange(node, range[0], range[1]);
     }
@@ -64,8 +64,8 @@
       let isContentEditable = element.contentEditable === "true";
 
       // Check the parameters
-      var text = isContentEditable ? getContentEditableText(element) : element.value;
-      var length = text.length;
+      let text = isContentEditable ? getContentEditableText(element) : element.value;
+      let length = text.length;
       if (start < 0) {
         start = 0;
       }

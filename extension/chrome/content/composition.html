@@ -1,0 +1,81 @@
+<html>
+  <body>
+    <p>Text to commit: 
+    <input type="text" id="text" value="^_^" /></p>
+    <p>Input:
+        <input id="i" type="text" value="Hello"/>
+        <button type="button" onclick="commitNodeText('i');">Start</button>
+    </p>
+    <p>Textarea:
+        <textarea id="t">Boy</textarea>
+        <button type="button" onclick="commitNodeText('t');">Start</button>
+    </p>
+    <p>Content Editable:
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <button type="button" onclick="commitNodeText('c');">Start</button>
+    </p>
+    <script type="application/x-javascript;version=1.7">
+
+    let Ci = Components.interfaces;
+    let Cc = Components.classes;
+    let Cu = Components.utils;
+    let domWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+
+    let commitTextInput = document.getElementById("text");
+
+    function commitNodeText(nodeId) {
+      let element = document.getElementById(nodeId);
+      let text = commitTextInput.value;
+      element.focus();
+      setTimeout(executeStart, 1000);
+      setTimeout(executeEnd, 2000);
+    }
+
+    function executeStart() {
+      CompositionManager.setComposingText("hello");
+    }
+
+    function executeEnd() {
+      CompositionManager.finishComposingText();
+    }
+
+    let CompositionManager =  {
+      _isStarted: false,
+
+      get isStarted() {
+        return this._isStarted;
+      },
+
+      setComposingText: function cm_setComposingText(text) {
+        let length = text.length;
+        if (length == 0) {
+          return;
+        }
+
+        // start composition if needs
+        if (!this._isStarted) {
+          this._isStarted = true;
+          domWindowUtils.sendCompositionEvent("compositionstart", "", "");
+        }
+
+        // Update the composing text
+        domWindowUtils.sendCompositionEvent("compositionupdate", text, "");
+        domWindowUtils.sendTextEvent(text, length,
+                                     domWindowUtils.COMPOSITION_ATTR_RAWINPUT,
+                                     0, 0, 0, 0, length, 0);
+      },
+
+      finishComposingText: function cm_finishComposingText() {
+        if (!this._isStarted) {
+          return;
+        }
+        domWindowUtils.sendTextEvent("", 0, 0, 0, 0, 0, 0, 0, 0);
+        domWindowUtils.sendCompositionEvent("compositionend", "", "");
+
+        this._isStarted = false;
+      }
+    }
+
+    </script>
+  </body>
+</html>

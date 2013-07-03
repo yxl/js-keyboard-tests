@@ -3,7 +3,15 @@
 <body>
     <p>Input:<input id="i" type="text" value="Hello" /></p>
     <p>Textarea:<textarea id="t">Boy</textarea></p>
-    <p>Content Editable:<span id="c" contenteditable="true">Hello, some <b style="display: none">bold</b> and <i>italic and <b>bold</b></i> text</span></p>
+    <p>Content Editable:
+      <span id="c" contenteditable="true">
+        <button id="b">This is a button</button>
+        Hello, some<img src="chrome://keyboard_test/skin/mute-disabled.png" />
+        <b style="display: none">bold</b> and <i>italic and <b>bold</b></i><br/> text and 
+        <input type="button" value="another button" />.
+      </span>
+      <button type="button" onclick="getContentEditableText();">Text content</button>
+    </p>
     <p>Selection Range: <span id="position"></span></p>
 <script type="application/x-javascript;version=1.7">
 let Ci = Components.interfaces;
@@ -11,33 +19,50 @@ let Cc = Components.classes;
 let Cu = Components.utils;
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 
-XPCOMUtils.defineLazyGetter(this, "documentEncoder", function() {
-    return Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"].getService(Ci.nsIDocumentEncoder);
-});
+function getDocumentEncoder(document) {
+  let encoder = Cc["@mozilla.org/layout/documentEncoder;1?type=text/plain"]
+                .createInstance(Ci.nsIDocumentEncoder);
+  let flags = Ci.nsIDocumentEncoder.SkipInvisibleContent |
+              Ci.nsIDocumentEncoder.OutputRaw |
+              Ci.nsIDocumentEncoder.OutputLFLineBreak |
+              Ci.nsIDocumentEncoder.OutputDropInvisibleBreak;
+  encoder.init(document, "text/plain", flags);
+  return encoder;
+}
+
+function getContentEditableText() {
+  let element = document.getElementById("c");
+  let encoder = getDocumentEncoder(document);
+  let range = document.createRange();
+  range.selectNodeContents(element);
+  encoder.setRange(range);
+  alert(encoder.encodeToString());
+}
 
 function getSelectionRange(element) {
-    let start = 0;
-    let end = 0;
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-        // Get the selection range of <input> and <textarea> elements
-        start = element.selectionStart;
-        end = element.selectionEnd;
-    } else {
-        // Get the selection range of contenteditable elements
-        let win = element.ownerDocument.defaultView;
-        let sel = win.getSelection();
+  let start = 0;
+  let end = 0;
+  if (element instanceof HTMLInputElement ||
+      element instanceof HTMLTextAreaElement) {
+    // Get the selection range of <input> and <textarea> elements
+    start = element.selectionStart;
+    end = element.selectionEnd;
+  } else {
+    // Get the selection range of contenteditable elements
+    let win = element.ownerDocument.defaultView;
+    let sel = win.getSelection();
 
-        let range = win.document.createRange();
-        range.setStart(element, 0);
-        range.setEnd(sel.anchorNode, sel.anchorOffset);
-        documentEncoder.init(win.document, "text/plain",
-                     Ci.nsIDocumentEncoder.SkipInvisibleContent);
-        documentEncoder.setRange(range);
-        start = documentEncoder.encodeToString().length;
+    let range = win.document.createRange();
+    range.setStart(element, 0);
+    range.setEnd(sel.anchorNode, sel.anchorOffset);
+    let documentEncoder = getDocumentEncoder(win.document);
+    documentEncoder.setRange(range);
+    start = documentEncoder.encodeToString().length;
 
-        end = start + sel.toString().length;
-    }
-    return [start, end];
+    documentEncoder.setRange(sel.getRangeAt(0));
+    end = start + documentEncoder.encodeToString().length;
+  }
+  return [start, end];
 }
 
 setInterval(function() {

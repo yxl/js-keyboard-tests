@@ -10,7 +10,7 @@
         <button type="button" onclick="setNodeSelectionRange('t');">Click me</button>
     </p>
     <p>Content Editable:
-        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i> text</span>
+        <span id="c" contenteditable="true">Hello, some <b>bold</b> and <i>italic and <b>bold</b></i><span style="display:none">Invisible</span> text</span>
         <button type="button" onclick="setNodeSelectionRange('c');">Click me</button>
     </p>
     <script type="application/x-javascript;version=1.7">
@@ -85,13 +85,13 @@
         let sel = win.getSelection();
 
         // Move the caret to the start position
-        sel.collapse(element, 0);
-        for (let i = 0; i < start; i++) {
-          sel.modify("move", "forward", "character");
+        sel.collapse(element, 1);
+        for (let i = length; i > start; i--) {
+          sel.modify("move", "backward", "character");
         }
 
         while(getContentEditableSelectionStart(element, sel) < start) {
-          sel.modify("move", "forward", "character");
+          sel.modify("move", "backward", "character");
         }
 
         // Extend the selection to the end position

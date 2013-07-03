@@ -1,10 +1,5 @@
-/* This is just an example.  You shouldn't do this. */
-#keyboard_test-hello
-{
-}
 #keyboard_test-toolbar-button
 {
-  list-style-image: url("chrome://keyboard_test/skin/toolbar-button.png");
   -moz-image-region: rect(0px 24px 24px 0px);
 }
 #keyboard_test-toolbar-button:hover

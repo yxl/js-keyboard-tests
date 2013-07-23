@@ -12,6 +12,10 @@
       </span>
       <button type="button" onclick="getContentEditableText();">Text content</button>
     </p>
+    <p>Content Editable with frame:
+      <span id="f" contenteditable="true">hello<iframe src="http://www.baidu.com/"></iframe></span>
+      <button type="button" onclick="getContentEditableText2();">Text content</button>
+    </p>
     <p>Selection Range: <span id="position"></span></p>
 <script type="application/x-javascript;version=1.7">
 let Ci = Components.interfaces;
@@ -24,14 +28,22 @@ function getDocumentEncoder(document) {
                 .createInstance(Ci.nsIDocumentEncoder);
   let flags = Ci.nsIDocumentEncoder.SkipInvisibleContent |
               Ci.nsIDocumentEncoder.OutputRaw |
-              Ci.nsIDocumentEncoder.OutputLFLineBreak |
-              Ci.nsIDocumentEncoder.OutputDropInvisibleBreak;
+              Ci.nsIDocumentEncoder.OutputLFLineBreak;
   encoder.init(document, "text/plain", flags);
   return encoder;
 }
 
 function getContentEditableText() {
   let element = document.getElementById("c");
+  let encoder = getDocumentEncoder(document);
+  let range = document.createRange();
+  range.selectNodeContents(element);
+  encoder.setRange(range);
+  alert(encoder.encodeToString());
+}
+
+function getContentEditableText2() {
+  let element = document.getElementById("f");
   let encoder = getDocumentEncoder(document);
   let range = document.createRange();
   range.selectNodeContents(element);
